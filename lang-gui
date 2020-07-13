@@ -1,0 +1,67 @@
+#!/usr/bin/python
+from tkinter import *
+import subprocess
+import os
+import sys
+
+# available languages 
+languages = ['chi_tra', 'chi_tra_vert', 'deu', 'eng', 'fra', 'jpn', 'jpn_vert']
+
+# hard coded variables
+current_language_text = 'current lang: '
+submit_text = 'submit'
+title_text = 'Change lang'
+language_variable = 'lang'
+ocr_file_loc = '~/.local/share/ocr_lang'
+
+# integers
+textbox_width = 10
+window_width = 250
+window_height = 100
+
+window_dimensions = str(window_width) + 'x' + str( window_height)
+
+def main():
+    # lambda functions
+    # export the language to file 
+    get_text = lambda : textbox.get()
+
+    # get and set the languages 
+    set_language = lambda : subprocess.call('echo "' + get_text() + '" > ' + ocr_file_loc, shell=True)
+    get_language = lambda : subprocess.check_output('cat ' + ocr_file_loc + ' ; exit 0', stderr=subprocess.STDOUT, shell=True).decode(sys.getdefaultencoding()).strip()
+
+    # put element on the window
+    place_element = lambda element, row, col : element.grid(row=row, column=col)
+
+    # define window and window size
+    window = Tk()
+    # windowWidth = window.winfo_reqwidth()
+    # windowHeight = window.winfo_reqheight()
+    positionRight = int(window.winfo_screenwidth()/2 - window.winfo_reqwidth()/2)
+    positionDown = int(window.winfo_screenheight()/2 - window.winfo_reqheight()/2)
+    window.geometry("+{}+{}".format(positionRight, positionDown))
+    window.resizable(False, False)
+
+    # for changing current language 
+    current_language = StringVar()
+    
+    languages_display = Label(window, text=' '.join(languages), anchor=CENTER)
+    current_language_display = Label(window, text=current_language_text + get_language())
+
+    textbox = Entry(window,width=textbox_width)
+    
+    submit_button = Button(window,
+                       text=submit_text,
+                       command= lambda :
+                       (set_language(),
+                        current_language_display.configure(text=get_language())))
+
+    place_element(element=languages_display, row=0, col=1)
+    place_element(element=current_language_display, row=1, col=1)
+    place_element(textbox, row=2, col=1)
+    place_element(submit_button, row=3, col=1)
+
+    window.mainloop()
+
+if __name__ == '__main__':
+    main()

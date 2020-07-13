@@ -1,0 +1,30 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import pytesseract
+import subprocess
+import sys
+import pyperclip
+screenshot_location = '/tmp/screenshot.png'
+
+def main():
+    #subprocess.call('export TESSDATA_PREFIX=/usr/share/tessdata')
+    ocr_file_loc = '~/.local/share/ocr_lang'
+    get_language = lambda : subprocess.check_output('cat ' + ocr_file_loc + ' ; exit 0', stderr=subprocess.STDOUT, shell=True).decode(sys.getdefaultencoding()).strip()
+
+    try:
+        p = subprocess.Popen('maim -s -u'.split() + [screenshot_location])
+        p.wait()
+    except:
+        return
+
+    pyperclip.copy(pytesseract.image_to_string(screenshot_location, lang=get_language()))
+
+    
+
+
+
+main()
+#if __name__ = '__main__':
+#    main()
+
+
