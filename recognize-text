@@ -4,11 +4,17 @@ import pytesseract
 import subprocess
 import sys
 import pyperclip
+import cv2
+
 screenshot_location = '/tmp/screenshot.png'
+ocr_file_loc = '~/.local/share/ocr_lang'
 
 def main():
     #subprocess.call('export TESSDATA_PREFIX=/usr/share/tessdata')
-    ocr_file_loc = '~/.local/share/ocr_lang'
+
+    grayscale_image  = lambda image : cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    threshold_image = lambda image : cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    
     get_language = lambda : subprocess.check_output('cat ' + ocr_file_loc + ' ; exit 0', stderr=subprocess.STDOUT, shell=True).decode(sys.getdefaultencoding()).strip()
 
     try:
@@ -17,7 +23,19 @@ def main():
     except:
         return
 
-    pyperclip.copy(pytesseract.image_to_string(screenshot_location, lang=get_language()))
+    dest_lang = get_language()
+    
+    
+    text = pytesseract.image_to_string(
+        threshold_image(
+            grayscale_image(
+                cv2.imread(screenshot_location))),
+        lang=dest_lang)
+
+    if 'jpn' in dest_lang:
+        text = text.replace(' ', '')
+    
+    pyperclip.copy(text)
 
     
 
